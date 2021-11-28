@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+    <style>
+        .widget {
+            height: 100px;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-bar {
+            fill: #ddd;
+        }
+
+        .progress-bar-bg {
+            fill: #3f3f3f;
+        }
+
+        .progress-label {
+            fill: #aaa;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 20px;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Galaxy Similarity Search in SDDS</h1>
+
+    <img id="my_image" width="64" height="64" />
+
+    <form id="frm1" action="/action_page.php">
+        ra: <input type="text" name="ra" id="ra" value="229.525575753922"><br>
+        dec: <input type="text" name="dec" id="dec" value="42.7458537608544"><br><br>
+        <input type="button" onclick="waitForPromise()" value="Submit">
+    </form>
+    <div id="imagecontainer">
+    <div class='widget'></div>
+    </div>
+</body>
+
+<script>
+
+
+    function radialProgress(selector) {
+        const parent = d3.select(selector)
+        const size = parent.node().getBoundingClientRect()
+        const svg = parent.append('svg')
+            .attr('width', size.width)
+            .attr('height', size.height);
+        const outerRadius = Math.min(size.width, size.height) * 0.45;
+        const thickness = 10;
+        let value = 0;
+
+        const mainArc = d3.arc()
+            .startAngle(0)
+            .endAngle(Math.PI * 2)
+            .innerRadius(outerRadius - thickness)
+            .outerRadius(outerRadius)
+
+        svg.append("path")
+            .attr('class', 'progress-bar-bg')
+            .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+            .attr('d', mainArc())
+
+        const mainArcPath = svg.append("path")
+            .attr('class', 'progress-bar')
+            .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+
+        svg.append("circle")
+            .attr('class', 'progress-bar')
+            .attr('transform', `translate(${size.width / 2},${size.height / 2 - outerRadius + thickness / 2})`)
+            .attr('width', thickness)
+            .attr('height', thickness)
+            .attr('r', thickness / 2)
+
+        const end = svg.append("circle")
+            .attr('class', 'progress-bar')
+            .attr('transform', `translate(${size.width / 2},${size.height / 2 - outerRadius + thickness / 2})`)
+            .attr('width', thickness)
+            .attr('height', thickness)
+            .attr('r', thickness / 2)
+
+        let percentLabel = svg.append("text")
+            .attr('class', 'progress-label')
+            .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+            .text('0')
+
+        return {
+            update: function (progressPercent) {
+                const startValue = value
+                const startAngle = Math.PI * startValue / 50
+                const angleDiff = Math.PI * progressPercent / 50 - startAngle;
+                const startAngleDeg = startAngle / Math.PI * 180
+                const angleDiffDeg = angleDiff / Math.PI * 180
+                const transitionDuration = 1500
+
+                mainArcPath.transition().duration(transitionDuration).attrTween('d', function () {
+                    return function (t) {
+                        mainArc.endAngle(startAngle + angleDiff * t)
+                        return mainArc();
+                    }
+                })
+                end.transition().duration(transitionDuration).attrTween('transform', function () {
+                    return function (t) {
+                        return `translate(${size.width / 2},${size.height / 2})` +
+                            `rotate(${(startAngleDeg + angleDiffDeg * t)})` +
+                            `translate(0,-${outerRadius - thickness / 2})`
+                    }
+                })
+                percentLabel.transition().duration(transitionDuration).tween('bla', function () {
+                    return function (t) {
+                        percentLabel.text(Math.round(startValue + (progressPercent - startValue) * t));
+                    }
+                })
+                value = progressPercent
+            }
+        }
+    }
+
+    let chart = radialProgress('.widget')
+
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    var nr_batches = 200
+    var batch_size
+    var base_address = "https://raw.githubusercontent.com/mdturp/galaxy_data/master/"
+    var sdss_image_address = "http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image"
+
+    function get_form_data() {
+        let ra = document.getElementById("ra").value
+        let dec = document.getElementById("dec").value
+        return { "ra": ra, "dec": dec }
+    }
+
+    function loadImage(ra, dec) {
+        return new Promise((resolve, reject) => {
+            let address = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
+
+            let display_img = document.getElementById("my_image")
+            display_img.src = address
+
+
+            let img = new Image(256, 256)
+            img.crossOrigin = ""
+            img.src = address
+            img.onload = () => {
+                // create the tensor after the image has loaded
+                const fromPixels = tf.browser.fromPixels(img);
+                resolve(fromPixels);
+            };
+            img.onerror = reject;
+        });
+    }
+
+
+    async function loadMachineLearningMode(ra, dec) {
+        image = await loadImage(ra, dec);
+        const model = await tf.loadLayersModel('https://raw.githubusercontent.com/mdturp/galaxy_data/master/model_weights/model.json');
+        console.log(Math.max.apply(Math, Array.from(image.dataSync())))
+        const broadcasted = tf.broadcastTo(image, [1, 256, 256, 3])
+        const transformed = broadcasted.div(tf.scalar(127.5)).sub(tf.scalar(1))
+        const prediction = await model.predict(transformed)
+        const prediction_arr = Array.from(prediction.squeeze().dataSync())
+        return prediction_arr
+
+    }
+
+    function appendImages(similar_galaxies) {
+        for (var i = 0; i < similar_galaxies.length; i++) {
+            ra = similar_galaxies[i]["ra"]
+            dec = similar_galaxies[i]["dec"]
+            sdds_path = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
+
+            var img = document.createElement("img");
+            img.src = sdds_path;
+            img.width = 64;
+            img.height = 64;
+            document.getElementById("imagecontainer").appendChild(img)
+        }
+    }
+
+
+    function cosinesim(A, B) {
+        var dotproduct = 0;
+        var mA = 0;
+        var mB = 0;
+        for (i = 0; i < A.length; i++) { // here you missed the i++
+            dotproduct += (A[i] * B[i]);
+            mA += (A[i] * A[i]);
+            mB += (B[i] * B[i]);
+        }
+        mA = Math.sqrt(mA);
+        mB = Math.sqrt(mB);
+        var similarity = (dotproduct) / ((mA) * (mB)) // here you needed extra brackets
+        return similarity;
+    }
+
+    function arg_sort(test) {
+        return Array.from(Array(test.length).keys())
+            .sort((a, b) => test[a] < test[b] ? -1 : (test[b] < test[a]) | 0).reverse()
+    }
+
+    async function compute_scores(example) {
+        var scores = []
+        for (var batch = 0; batch < nr_batches; batch++) {
+            var feature_batch = `batch_${batch}.json`
+            var full_address = base_address + feature_batch
+            await d3.json(full_address).then(data => {
+
+
+                for (var idx = 0; idx < data.length; idx++) {
+                    scores.push(cosinesim(example, data[idx]))
+                }
+            });
+
+            chart.update(Math.round((batch+1) / nr_batches*100))
+
+        }
+        return scores
+    }
+
+    async function waitForPromise() {
+
+        var form_data = get_form_data()
+        const example = await loadMachineLearningMode(
+            form_data.ra, form_data.dec)
+
+        const ids = await d3.json(base_address + `ids_ra_dec.json`).then(data => {
+            return data
+        })
+        console.log(ids)
+        const scores = await compute_scores(example)
+        
+        const sorted_indexs = arg_sort(scores)
+        console.log(sorted_indexs)
+        const top_ten_galaxies = sorted_indexs.slice(0, 10).map(idx => ids[idx])
+
+        console.log(top_ten_galaxies)
+        appendImages(top_ten_galaxies)
+    }
+
+    // waitForPromise()
+
+
+
+
+</script>
+
+</html>
