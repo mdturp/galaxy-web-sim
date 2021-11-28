@@ -1,0 +1,43 @@
+.widget {
+  height: 100px;
+  width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.progress-bar {
+  fill: #ddd;
+}
+
+.progress-bar-bg {
+  fill: #3f3f3f;
+}
+
+.progress-label {
+  fill: #aaa;
+  font-family: "Open Sans", sans-serif;
+  font-size: 20px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+  text-align: center;
+}
+
+body {
+  font-family: Helvetica, sans-serif;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  /* background-color: rgb(58, 60, 61); */
+  color: rgb(122, 115, 115);
+  text-align: center;
+}
