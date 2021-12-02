@@ -22,23 +22,24 @@
             Provide either the coordinates of your galaxy using ra/dec or click
             on one of the example images below.</p>
 
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(178.908, -0.771)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=178.908&dec=-0.771&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(256.157, 60.585)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=256.157&dec=60.585&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(229.525575754, 42.745853761)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=229.525575754&dec=42.745853761&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(173.49774, -3.60639)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=173.49774&dec=-3.60639&width=256&height=256" />
+        <img width="128" height="128" onclick="changeFormValueAndSubmit(209.212555, 37.797237)"
+            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=209.212555&dec=37.797237&width=256&height=256" />
+        <img width="128" height="128" onclick="changeFormValueAndSubmit(176.439835, 10.824595)"
+            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=176.439835&dec=10.824595&width=256&height=256" />
+        <img width="128" height="128" onclick="changeFormValueAndSubmit(137.334564, 20.697317)"
+            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=137.334564&dec=20.697317&width=256&height=256" />
+        <img width="128" height="128" onclick="changeFormValueAndSubmit(214.780487, 34.871181)"
+            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=214.780487&dec=34.8711819&width=256&height=256" />
         <form id="frm1">
-            ra: <input type="text" name="ra" id="ra" value="229.525575753922"><br>
-            dec: <input type="text" name="dec" id="dec" value="42.7458537608544"><br><br>
+            ra: <input type="text" name="ra" id="ra" value=""><br>
+            dec: <input type="text" name="dec" id="dec" value=""><br><br>
             <input id="submit_button" type="button" onclick="main()" value="Submit">
         </form>
         <br>
         <img id="my_image" width="128" height="128" style="display:none" src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=173.49774&dec=-3.60639&width=256&height=256"/>
         <div id="imagecontainer"></div>
-        <div class='widget'></div>
+        <div id="widget" class='widget' style="visibility: collapse"></div>
+        <div id="explanation"></div>
     </div>
     <div class="footer"> Made by <a href="https://kyuseokoh.work/"> Kyuseok Oh </a> & M. Dennis Turp </div>
 
@@ -56,20 +57,24 @@
     }
 
 
-
     async function main() {
-
+        clean()
         var form_data = get_form_data()
+        setText("Predicting feature vector")
         const example = await predictImage(form_data.ra, form_data.dec)
         const ids = await d3.json(base_address + `ids_ra_dec.json`).then(data => {
             return data
         })
+        setText("Finding similar objects")
+        setWidget("visible")
         const scores = await compute_scores(example)
 
         const sorted_indexs = arg_sort(scores)
         const top_ten_galaxies = sorted_indexs.slice(0, 10).map(idx => ids[idx])
 
         console.log(top_ten_galaxies)
+        setWidget("collapse")
+        setText("")
         appendImages(top_ten_galaxies, "imagecontainer")
     }
 

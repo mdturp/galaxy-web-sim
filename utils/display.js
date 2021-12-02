@@ -112,13 +112,18 @@ function appendImages(similar_galaxies, container_name) {
     for (var i = 0; i < similar_galaxies.length; i++) {
         ra = similar_galaxies[i]["ra"]
         dec = similar_galaxies[i]["dec"]
+        sdds_explorer_address = `http://skyserver.sdss.org/dr12/en/tools/explore/summary.aspx?ra=${ra}&dec=${dec}`
         sdds_path = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
 
+        var a = document.createElement('a');
         var img = document.createElement("img");
         img.src = sdds_path;
         img.width = 64;
         img.height = 64;
-        document.getElementById(container_name).appendChild(img)
+        a.href=sdds_explorer_address
+        a.target="_blank"
+        a.appendChild(img)
+        document.getElementById(container_name).appendChild(a)
     }
 }
 
@@ -127,4 +132,23 @@ function changeFormValueAndSubmit(ra, dec){
     document.getElementById("dec").value = dec
     document.getElementById('submit_button').click();
 
+}
+
+function clean(){
+    var imagecontainer = document.getElementById("imagecontainer");
+    imagecontainer.innerHTML = ""
+}
+
+function setText(text){
+    var explanation = document.getElementById("explanation");
+    if (text === ""){
+        explanation.innerHTML = ""
+    } else {
+        explanation.innerHTML = `<div class="loader">${text}<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>`;
+    }
+}
+
+function setWidget(display){
+    var widget = document.getElementById("widget");
+    widget.style.visibility = display
 }
