@@ -1,83 +1,91 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
 
-    <!-- External packages -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+        <!-- External packages -->
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
 
-    <!-- Internal packages -->
-    <script src="./utils/display.js"></script>
-    <script src="./main.js"></script>
-    <link rel="stylesheet" href="./utils/display.css">
-</head>
+        <!-- Internal packages -->
+        <script src="./utils/display.js"></script>
+        <script src="./main.js"></script>
+        <link rel="stylesheet" href="./utils/display.css">
+    </head>
 
-<body>
-    <div class="center">
-        <h1> SDSS Galaxy Similarity Search </h1>
-        <p>Search for similar galaxies in the Solan Digital Sky Survey.
-            Provide either the coordinates of your galaxy using ra/dec or click
-            on one of the example images below.</p>
+    <body>
+        <div class="center">
+            <h1> SDSS Galaxy Similarity Search </h1>
+            <p>Search for similar galaxies in the Solan Digital Sky Survey.
+                Provide either the coordinates of your galaxy using ra/dec or
+                click
+                on one of the example images below.</p>
 
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(209.212555, 37.797237)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=209.212555&dec=37.797237&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(176.439835, 10.824595)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=176.439835&dec=10.824595&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(137.334564, 20.697317)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=137.334564&dec=20.697317&width=256&height=256" />
-        <img width="128" height="128" onclick="changeFormValueAndSubmit(214.780487, 34.871181)"
-            src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=214.780487&dec=34.8711819&width=256&height=256" />
-        <form id="frm1">
-            ra: <input type="text" name="ra" id="ra" value=""><br>
-            dec: <input type="text" name="dec" id="dec" value=""><br><br>
-            <input id="submit_button" type="button" onclick="main()" value="Submit">
-        </form>
-        <br>
-        <img id="my_image" width="128" height="128" style="display:none" src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=173.49774&dec=-3.60639&width=256&height=256"/>
-        <div id="imagecontainer"></div>
-        <div id="widget" class='widget' style="visibility: collapse"></div>
-        <div id="explanation"></div>
-    </div>
-    <div class="footer"> Made by <a href="https://kyuseokoh.work/"> Kyuseok Oh </a> & M. Dennis Turp </div>
+            <img width="128" height="128"
+                onclick="changeFormValueAndSubmit(209.212555, 37.797237)"
+                src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=209.212555&dec=37.797237&width=256&height=256" />
+            <img width="128" height="128"
+                onclick="changeFormValueAndSubmit(176.439835, 10.824595)"
+                src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=176.439835&dec=10.824595&width=256&height=256" />
+            <img width="128" height="128"
+                onclick="changeFormValueAndSubmit(137.334564, 20.697317)"
+                src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=137.334564&dec=20.697317&width=256&height=256" />
+            <img width="128" height="128"
+                onclick="changeFormValueAndSubmit(214.780487, 34.871181)"
+                src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=214.780487&dec=34.8711819&width=256&height=256" />
+            <form id="frm1">
+                ra: <input type="text" name="ra" id="ra" value=""><br>
+                dec: <input type="text" name="dec" id="dec" value=""><br><br>
+                <input id="submit_button" type="button" onclick="main()"
+                    value="Submit">
+            </form>
+            <br>
+            <img id="my_image" width="128" height="128" style="display:none"
+                src="http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image&ra=173.49774&dec=-3.60639&width=256&height=256" />
+            <div id="imagecontainer"></div>
+            <div id="widget" class='widget' style="visibility: collapse"></div>
+            <div id="explanation"></div>
+        </div>
+        <div class="footer"> Made by <a href="https://kyuseokoh.work/"> Kyuseok
+                Oh </a> & M. Dennis Turp </div>
 
-</body>
+    </body>
 
-<script>
+    <script>
 
-    let chart = radialProgress('.widget')
-
-
-    function get_form_data() {
-        let ra = document.getElementById("ra").value
-        let dec = document.getElementById("dec").value
-        return { "ra": ra, "dec": dec }
-    }
+        let chart = radialProgress('.widget')
 
 
-    async function main() {
-        clean()
-        var form_data = get_form_data()
-        setText("Predicting feature vector")
-        const example = await predictImage(form_data.ra, form_data.dec)
-        const ids = await d3.json(base_address + `ids_ra_dec.json`).then(data => {
-            return data
-        })
-        setText("Finding similar objects")
-        setWidget("visible")
-        const scores = await compute_scores(example)
+        function get_form_data() {
+            let ra = document.getElementById("ra").value
+            let dec = document.getElementById("dec").value
+            return { "ra": ra, "dec": dec }
+        }
 
-        const sorted_indexs = arg_sort(scores)
-        const top_ten_galaxies = sorted_indexs.slice(0, 10).map(idx => ids[idx])
 
-        console.log(top_ten_galaxies)
-        setWidget("collapse")
-        setText("")
-        appendImages(top_ten_galaxies, "imagecontainer")
-    }
+        async function main() {
+            clean()
+            var form_data = get_form_data()
+            setText("Predicting feature vector")
+            const example = await predictImage(form_data.ra, form_data.dec)
+            const ids = await d3.json(base_address + `ids_ra_dec.json`).then(data => {
+                return data
+            })
+            setText("Finding similar objects")
+            setWidget("visible")
+            const scores = await compute_scores(example)
 
-</script>
+            const sorted_indexs = arg_sort(scores)
+            const top_ten_galaxies = sorted_indexs.slice(0, 10).map(idx => ids[idx])
+
+            setWidget("collapse")
+            setText("")
+            appendImages(top_ten_galaxies, "imagecontainer")
+        }
+
+    </script>
 
 </html>
