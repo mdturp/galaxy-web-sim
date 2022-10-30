@@ -112,15 +112,15 @@ function appendImages(similar_galaxies, container_name) {
     for (var i = 0; i < similar_galaxies.length; i++) {
         ra = similar_galaxies[i]["ra"]
         dec = similar_galaxies[i]["dec"]
-        sdds_explorer_address = `https://skyserver.sdss.org/dr16/en/tools/explore/summary.aspx?ra=${ra}&dec=${dec}`
-        sdds_path = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
+        sdss_explorer_address = `https://skyserver.sdss.org/dr16/en/tools/explore/summary.aspx?ra=${ra}&dec=${dec}`
+        sdss_path = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
 
         var a = document.createElement('a');
         var img = document.createElement("img");
-        img.src = sdds_path;
+        img.src = sdss_path;
         img.width = 64;
         img.height = 64;
-        a.href=sdds_explorer_address
+        a.href=sdss_explorer_address
         a.target="_blank"
         a.appendChild(img)
         document.getElementById(container_name).appendChild(a)
