@@ -1,5 +1,5 @@
 
-var sdss_image_address = "http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image"
+var sdss_image_address = "https://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image"
 
 function radialProgress(selector) {
   const parent = d3.select(selector);
@@ -112,7 +112,7 @@ function appendImages(similar_galaxies, container_name) {
     for (var i = 0; i < similar_galaxies.length; i++) {
         ra = similar_galaxies[i]["ra"]
         dec = similar_galaxies[i]["dec"]
-        sdds_explorer_address = `http://skyserver.sdss.org/dr12/en/tools/explore/summary.aspx?ra=${ra}&dec=${dec}`
+        sdds_explorer_address = `https://skyserver.sdss.org/dr16/en/tools/explore/summary.aspx?ra=${ra}&dec=${dec}`
         sdds_path = sdss_image_address + `&ra=${ra}&dec=${dec}` + "&width=256&height=256"
 
         var a = document.createElement('a');

@@ -2,7 +2,7 @@ var nr_batches = 200;
 var base_address =
   "https://raw.githubusercontent.com/mdturp/galaxy_data/master/";
 var sdss_image_address =
-  "http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image";
+  "https://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Explore.Image";
 var model_weights_address =
   "https://raw.githubusercontent.com/mdturp/galaxy_data/master/model_weights/model.json";
 
