@@ -1,6 +1,6 @@
 # Galaxy Web Similarity Search
 
-Welcome to the SDSS Galaxy Similarity Search repository. This project enables you to search for similar galaxies within the (Sloan Digital Sky Survey (SDSS))[https://classic.sdss.org/] based on user-provided coordinates (ra/dec) or by selecting from one of our pre-set example images. Harness the power of astronomy and machine learning to explore the universe - right from your web browser, with no installation required!
+Welcome to the SDSS Galaxy Similarity Search repository. This project enables you to search for similar galaxies within the [Sloan Digital Sky Survey (SDSS)](https://classic.sdss.org/) based on user-provided coordinates (ra/dec) or by selecting from one of our pre-set example images. Harness the power of astronomy and machine learning to explore the universe - right from your web browser, with no installation required!
 
 The application utilizes TensorFlow.js, a JavaScript library for training and deploying machine learning models in the browser. This allows for the heavy computation to be done right in your browser, providing a seamless experience. **No need for a backend** 
 
